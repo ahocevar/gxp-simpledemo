@@ -3,6 +3,15 @@
 The intention of this project is to show a simple example for an application created
 from http://github.com/opengeo/readygxp.
 
+## Building on Windows
+
+The build file is made for Unix based systems that have ssh installed. To
+make the build work on Windows, you have to use the Windows specific
+build file. To do so, run the following commands on the Windows console:
+
+    rename build.xml build.xml.unix
+    rename build.xml.windows build.xml
+
 ## Debug Mode
 
 Loads all scripts uncompressed.
