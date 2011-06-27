@@ -77,7 +77,8 @@ var app = new gxp.Viewer({
         ],
         layers: [{
             source: "local",
-            name: "medford"
+            name: "medford",
+            group: "background"
         }]
     }
 });

@@ -1,10 +1,9 @@
-var Client = require("ringo/httpclient").Client;
+var clientRequest = require("ringo/httpclient").request;
 var Request = require("ringo/webapp/request").Request;
 var Headers = require("ringo/utils/http").Headers;
 var MemoryStream = require("io").MemoryStream;
 var objects = require("ringo/utils/objects");
-var responseForStatus = require("util").responseForStatus;
-var defer = require("ringo/promise").defer;
+var responseForStatus = require("./util").responseForStatus;
 
 var URL = java.net.URL;
 
@@ -99,7 +98,7 @@ var createProxyRequestProps = exports.createProxyRequestProps = function(config)
         };
     }
     return props;
-}
+};
 
 function proxyPass(config) {
     var response;
@@ -109,38 +108,27 @@ function proxyPass(config) {
         response = responseForStatus(400, "The url parameter value must be absolute url with same scheme as request.");
     } else {
         // re-issue request
-        var client = new Client();
-        response = defer();
-        var exchange = client.request({
+        var exchange = clientRequest({
             url: outgoing.url,
             method: outgoing.method,
             username: outgoing.username,
             password: outgoing.password,
             headers: outgoing.headers,
             data: outgoing.data,
-            async: true,
-            complete: function() {
-                if (exchange) {
-                    var headers = new Headers(objects.clone(exchange.headers));
-                    if (!config.allowAuth) {
-                        // strip out authorization and cookie headers
-                        headers.unset("WWW-Authenticate");
-                        headers.unset("Set-Cookie");
-                    }
-                    response.resolve({
-                        status: exchange.status,
-                        headers: headers,
-                        body: new MemoryStream(exchange.contentBytes)
-                    });
-                } else {
-                    response.resolve({
-                        status: 408,
-                        headers: {"Content-Type": "text/plain"},
-                        body: ["Request Timeout"]
-                    });
-                }
-            }
+            async: false
         });
     }
-    return response;
+    exchange.wait();
+    var headers = new Headers(objects.clone(exchange.headers));
+    if (!config.allowAuth) {
+        // strip out authorization and cookie headers
+        headers.unset("WWW-Authenticate");
+        headers.unset("Set-Cookie");
+    }
+    return {
+        status: exchange.status,
+        headers: headers,
+        body: new MemoryStream(exchange.contentBytes)
+    };
 }
+
