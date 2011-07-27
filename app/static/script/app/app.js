@@ -48,7 +48,9 @@ var app = new gxp.Viewer({
     }, {
         ptype: "gxp_featuremanager",
         id: "featuremanager",
-        autoLoadFeatures: true
+        autoLoadFeatures: true,
+        paging: false,
+        maxFeatures: 250
     }, {
         ptype: "gxp_featuregrid",
         featureManager: "featuremanager",
